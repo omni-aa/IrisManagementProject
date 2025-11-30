@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
@@ -14,7 +13,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Common\Common.Logging\Common.Logging.csproj" />
+        <ProjectReference Include="..\..\Common\Common.Logging\Common.Logging.csproj" />
     </ItemGroup>
 
+    <!-- ✅ ADD THIS to copy NLog.config -->
+    <ItemGroup>
+        <Content Include="..\..\..\NLog.config">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 </Project>

@@ -1,16 +1,14 @@
-
 using Authentication.API.DbContexts;
 using Common.Logging;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-LoggingService.ConfigureLogging(builder);
+// Debug NLog setup
+Console.WriteLine("=== NLOG SETUP ===");
+Console.WriteLine($"Working Directory: {Directory.GetCurrentDirectory()}");
 
-// ✅ Configure Logging
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.SetMinimumLevel(LogLevel.Warning);
+LoggingService.ConfigureLogging(builder);
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -28,41 +26,45 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("=== APPLICATION STARTED ===");
+logger.LogInformation("Log directory: {CurrentDirectory}", Directory.GetCurrentDirectory());
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-    app.MapOpenApi(); // Swagger in dev
+    app.MapOpenApi();
 }
 
-// ✅ CORRECT Middleware Order
 app.UseRouting();
-app.UseCors(); // ← This should come BEFORE MapControllers()
-
-app.MapControllers(); // Maps [ApiController] routes
+app.UseCors();
+app.MapControllers();
 app.MapGet("/", () => "✅ Authentication.API Server is running!");
 
-// Test database connection
+// Test with logger instead of Console
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     try
     {
         var canConnect = dbContext.Database.CanConnect();
-        Console.WriteLine($"Database connection: {(canConnect ? "SUCCESS" : "FAILED")}");
+        logger.LogInformation("Database connection: {Status}", (canConnect ? "SUCCESS" : "FAILED"));
         
         if (canConnect)
         {
             var userCount = dbContext.Users.Count();
-            Console.WriteLine($"Database is ready with {userCount} users");
+            logger.LogInformation("Database is ready with {UserCount} users", userCount);
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Database error: {ex.Message}");
+        logger.LogError(ex, "Database connection error");
     }
 }
 
-app.Run();
+app.UseHttpsRedirection();
+app.Lifetime.ApplicationStopping.Register(LoggingService.Shutdown);
 
-app.Lifetime.ApplicationStopped.Register(LoggingService.Shutdown);
+logger.LogInformation("=== STARTING SERVER ===");
+app.Run();
