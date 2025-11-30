@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.API", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryManagement.API", "src\InventoryManagementService\InventoryManagement.API\InventoryManagement.API.csproj", "{A89D0FDE-0DAA-449A-9049-E603CBF61EAC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging", "src\Common\Common.Logging\Common.Logging.csproj", "{FAAC44D2-BD33-4A09-BE56-F0D9B2C6220E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{A89D0FDE-0DAA-449A-9049-E603CBF61EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A89D0FDE-0DAA-449A-9049-E603CBF61EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A89D0FDE-0DAA-449A-9049-E603CBF61EAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAAC44D2-BD33-4A09-BE56-F0D9B2C6220E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAAC44D2-BD33-4A09-BE56-F0D9B2C6220E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAAC44D2-BD33-4A09-BE56-F0D9B2C6220E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAAC44D2-BD33-4A09-BE56-F0D9B2C6220E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
