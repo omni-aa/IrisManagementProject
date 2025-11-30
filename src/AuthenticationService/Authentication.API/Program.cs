@@ -1,41 +1,63 @@
+
+using Authentication.API.DbContexts;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// ✅ Configure Logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(LogLevel.Warning);
+
+// Add services to the container
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddCors(options => 
+{
+    options.AddDefaultPolicy(policy => 
+    {
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
+});
+builder.Services.AddDbContext<AppDbContext>(options => 
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), 
+        new MySqlServerVersion(new Version(8, 0, 21))));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseDeveloperExceptionPage();
+    app.MapOpenApi(); // Swagger in dev
 }
 
-app.UseHttpsRedirection();
+// ✅ CORRECT Middleware Order
+app.UseRouting();
+app.UseCors(); // ← This should come BEFORE MapControllers()
 
-var summaries = new[]
+app.MapControllers(); // Maps [ApiController] routes
+app.MapGet("/", () => "✅ Authentication.API Server is running!");
+
+// Test database connection
+using (var scope = app.Services.CreateScope())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
     {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
+        var canConnect = dbContext.Database.CanConnect();
+        Console.WriteLine($"Database connection: {(canConnect ? "SUCCESS" : "FAILED")}");
+        
+        if (canConnect)
+        {
+            var userCount = dbContext.Users.Count();
+            Console.WriteLine($"Database is ready with {userCount} users");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database error: {ex.Message}");
+    }
+}
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
