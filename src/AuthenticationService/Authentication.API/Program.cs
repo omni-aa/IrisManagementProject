@@ -1,8 +1,11 @@
 
 using Authentication.API.DbContexts;
+using Common.Logging;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+LoggingService.ConfigureLogging(builder);
 
 // ✅ Configure Logging
 builder.Logging.ClearProviders();
@@ -61,3 +64,5 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+app.Lifetime.ApplicationStopped.Register(LoggingService.Shutdown);
